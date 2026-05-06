@@ -287,7 +287,7 @@ def reflect_pose(pose):
     Input is a 72-Dim vector.
     Global rotation (first 3) is left alone.
     """
-    with tf.name_scope("reflect_pose", [pose]):
+    with tf.name_scope("reflect_pose", values=[pose]):
         """
         # How I got the indices:
         right = [11, 8, 5, 2, 14, 17, 19, 21, 23]
@@ -335,7 +335,7 @@ def reflect_joints3d(joints):
     Assumes input is 14 x 3 (the LSP skeleton subset of H3.6M)
     """
     swap_inds = tf.constant([5, 4, 3, 2, 1, 0, 11, 10, 9, 8, 7, 6, 12, 13])
-    with tf.name_scope("reflect_joints3d", [joints]):
+    with tf.name_scope("reflect_joints3d", values=[joints]):
         joints_ref = tf.gather(joints, swap_inds)
         flip_mat = tf.constant([[-1, 0, 0], [0, 1, 0], [0, 0, 1]], tf.float32)
         joints_ref = tf.transpose(

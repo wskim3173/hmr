@@ -219,7 +219,7 @@ def render_model(verts,
     if color_id is None:
         color = colors['light_blue']
     else:
-        color_list = colors.values()
+        color_list = list(colors.values())
         color = color_list[color_id % len(color_list)]
 
     imtmp = simple_renderer(rn, verts, faces, color=color)
@@ -261,6 +261,12 @@ def get_original(proc_param, verts, cam, joints, img_size):
 
     return cam_for_render, vert_shifted, kp_original
 
+
+def to_point(p):
+    return (int(round(float(p[0]))), int(round(float(p[1]))))
+
+def to_color(c):
+    return tuple(int(x) for x in c)
 
 def draw_skeleton(input_image, joints, draw_edges=True, vis=None, radius=None):
     """
@@ -387,34 +393,43 @@ def draw_skeleton(input_image, joints, draw_edges=True, vis=None, radius=None):
         import ipdb
         ipdb.set_trace()
 
-    for child in xrange(len(parents)):
+    for child in range(len(parents)):
         point = joints[:, child]
+        point = to_point(point)
+
         # If invisible skip
         if vis is not None and vis[child] == 0:
             continue
+
         if draw_edges:
-            cv2.circle(image, (point[0], point[1]), radius, colors['white'],
-                       -1)
-            cv2.circle(image, (point[0], point[1]), radius - 1,
-                       colors[jcolors[child]], -1)
+            cv2.circle(image, point, int(radius), to_color(colors['white']), -1)
+            cv2.circle(image, point, int(radius - 1), to_color(colors[jcolors[child]]), -1)
         else:
-            # cv2.circle(image, (point[0], point[1]), 5, colors['white'], 1)
-            cv2.circle(image, (point[0], point[1]), radius - 1,
-                       colors[jcolors[child]], 1)
-            # cv2.circle(image, (point[0], point[1]), 5, colors['gray'], -1)
+            cv2.circle(image, point, int(radius - 1), to_color(colors[jcolors[child]]), 1)
+
         pa_id = parents[child]
+
         if draw_edges and pa_id >= 0:
             if vis is not None and vis[pa_id] == 0:
                 continue
+
             point_pa = joints[:, pa_id]
-            cv2.circle(image, (point_pa[0], point_pa[1]), radius - 1,
-                       colors[jcolors[pa_id]], -1)
+            point_pa = to_point(point_pa)
+
+            cv2.circle(image, point_pa, int(radius - 1), to_color(colors[jcolors[pa_id]]), -1)
+
             if child not in ecolors.keys():
                 print('bad')
                 import ipdb
                 ipdb.set_trace()
-            cv2.line(image, (point[0], point[1]), (point_pa[0], point_pa[1]),
-                     colors[ecolors[child]], radius - 2)
+
+            cv2.line(
+                image,
+                point,
+                point_pa,
+                to_color(colors[ecolors[child]]),
+                int(radius - 2)
+            )
 
     # Convert back in original dtype
     if input_is_float:
