@@ -119,6 +119,48 @@ def preprocess_image(img_path, json_path=None):
 
     return crop, proc_param, img
 
+def pretty_print_prediction(joints, verts, cams, joints3d, theta):
+    import numpy as np
+
+    np.set_printoptions(precision=4, suppress=True)
+
+    print("\n" + "=" * 60)
+    print("Prediction Summary")
+    print("=" * 60)
+
+    print(f"joints.shape   : {joints.shape}")
+    print(f"verts.shape    : {verts.shape}")
+    print(f"cams.shape     : {cams.shape}")
+    print(f"joints3d.shape : {joints3d.shape}")
+    print(f"theta.shape    : {theta.shape}")
+
+    print("\n[Camera]")
+    print(cams[0])   # batch 0
+
+    print("\n[2D joints] first 5")
+    print(joints[0][:5])
+
+    print("\n[3D joints] first 5")
+    print(joints3d[0][:5])
+
+    print("\n[Mesh verts] first 5")
+    print(verts[0][:5])
+
+    print("\n[Theta]")
+    print("camera (3):")
+    print(theta[0][:3])
+
+    print("\npose (first 12 of 72):")
+    print(theta[0][3:15])
+
+    print("\nshape (10):")
+    print(theta[0][-10:])
+
+    print("\n[Stats]")
+    print(f"verts min/max    : {verts[0].min():.4f} / {verts[0].max():.4f}")
+    print(f"joints3d min/max : {joints3d[0].min():.4f} / {joints3d[0].max():.4f}")
+
+    print("=" * 60 + "\n")
 
 def main(img_path, json_path=None):
     sess = tf.Session()
@@ -134,6 +176,8 @@ def main(img_path, json_path=None):
     # shape is 10D shape coefficients of SMPL
     joints, verts, cams, joints3d, theta = model.predict(
         input_img, get_theta=True)
+
+    pretty_print_prediction(joints, verts, cams, joints3d, theta)
 
     visualize(img, proc_param, joints[0], verts[0], cams[0])
 
